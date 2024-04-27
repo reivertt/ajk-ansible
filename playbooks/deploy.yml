@@ -1,0 +1,7 @@
+---
+- name: Deploying
+  become: true
+  hosts: all
+  roles: 
+    # - ../roles/backend-deploy
+    - ../roles/frontend-deploy

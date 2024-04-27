@@ -1,0 +1,8 @@
+---
+# playbook to prepare
+- name: Preparing
+  become: true
+  hosts: all
+  roles: 
+    - ../roles/nginx-prepare
+    - ../roles/mysql-prepare
