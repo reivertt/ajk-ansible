@@ -1,0 +1,25 @@
+---
+# tasks file for frontend-deploy
+- name: Create nginx configuration
+  template:
+    src: fe-todo.j2
+    dest: /etc/nginx/sites-available/fe-todo
+    owner: root
+    group: root  
+
+- name: Link nginx configuration
+  file:
+    src: /etc/nginx/sites-available/fe-todo
+    dest: /etc/nginx/sites-enabled/fe-todo
+    state: link
+  become: true
+  notify: Restart nginx
+
+- name: Check nginx configuration
+  shell: nginx -t
+  register: resultnginx
+  become: true
+
+- name: Show nginx result
+  debug:
+    var: resultnginx.content

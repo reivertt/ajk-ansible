@@ -1,0 +1,43 @@
+---
+# tasks file for nginx-prepare
+- name: Install nginx
+  apt:
+    name: nginx
+    state: present
+  become: true
+
+- name: Enable UFW
+  become: true
+  community.general.ufw:
+    state: enabled
+
+- name: Allow SSH 80
+  become: true
+  community.general.ufw:
+    rule: allow
+    port: 80
+
+- name: Allow SSH 22
+  become: true
+  community.general.ufw:
+    rule: allow
+    port: 22
+
+- name: Allow SSH 8000
+  become: true
+  community.general.ufw:
+    rule: allow
+    port: 8000
+
+- name: Start Nginx
+  become: true
+  service:
+    name: nginx
+    state: started
+
+- name: Delete default
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  become: true
+  notify: Restart nginx

@@ -1,0 +1,100 @@
+---
+# tasks file for backend-build
+- name: add PHP repo
+  become: true
+  apt_repository:
+    repo: ppa:ondrej/php
+    state: present
+
+- name: Update
+  become: true
+  apt:
+    update_cache: yes
+
+- name: Install PHP
+  become: true
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  loop:
+    - php8.1-common
+    - php8.1-cli
+    - php8.1-mbstring
+    - php8.1-xml
+    - unzip
+    - php8.1-curl
+    - php8.1-mysql
+    - php8.1-fpm
+    - php8.1-intl
+  
+- name: Add safe directory to git
+  community.general.git_config:
+    name: safe.directory
+    value: 
+      - /var/www/be-todo
+    scope: global
+
+- name: Clone repository BE
+  git:
+    repo: https://github.com/elshiraphine/be-todo.git
+    dest: /var/www/be-todo
+    version: master
+    force: yes
+
+- name: Change permissions 1
+  file:
+    path: /var/www/be-todo
+    mode: '0777'
+    recurse: yes
+  become: true
+
+- name: Change permissions 2
+  file:
+    path: /usr/local.bin
+    mode: '0777'
+    recurse: yes
+  become: true
+
+- name: Change ownership
+  file:
+    path: /var/wwww/be-todo
+    group: www-data
+    owner: www-data
+    recurse: yes
+  become: true
+
+- name: Download Composer setup script
+  command: "php -r \"copy('https://getcomposer.org/installer', 'composer-setup.php');\""
+  args:
+    executable: /bin/bash
+
+- name: Install Composer
+  command: "php composer-setup.php --install-dir=/usr/local/bin --filename=composer"
+  args:
+    executable: /bin/bash
+
+- name: Remove Composer setup script
+  command: "php -r \"unlink('composer-setup.php');\""
+  args:
+    executable: /bin/bash
+
+- name: Install composer as root
+  community.general.composer:
+    command: install
+    working_dir: /var/www/be-todo
+    arguments: "--no-plugins --no-scripts"
+  become: true
+  become_user: root
+  environment: 
+    COMPOSER_ALLOW_SUPERUSER: "1"
+
+- name: Update composer as root
+  community.general.composer:
+    command: update
+    working_dir: /var/www/be-todo
+    arguments: "--no-plugins --no-scripts"
+  become: true
+  become_user: root
+  environment: 
+    COMPOSER_ALLOW_SUPERUSER: "1"
