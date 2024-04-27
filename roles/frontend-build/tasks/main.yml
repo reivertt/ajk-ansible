@@ -1,26 +1,30 @@
 ---
 # tasks file for frontend-build
-- name: Fetch NVM
-  get_url:
-    url: https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh
-    dest: /tmp/install_nvm.sh
-    mode: '0755'
+- name: Installing npm package 
+  apt:
+    name: npm
+    state: present
+  become: true
 
-- name: Install NVM
-  shell: /tmp/install_nvm.sh
-  args:
-    chdir: /home/reivertt
+- name: Installing Curl package 
+  apt:
+    name: curl
+    state: present
+  become: true
 
 - name: Add Yarn GPG Key
   shell: curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+  become: true
 
 - name: add Yarn Repository
   shell: echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+  become: true
 
 - name: Install Yarn
   apt:
     name: yarn
     state: latest
+  become: true
 
 - name: Add safe directory to git
   community.general.git_config:
@@ -33,7 +37,7 @@
   git:
     repo: https://github.com/elshiraphine/fe-todo.git
     dest: /etc/www/fe-todo
-    version: master
+    version: main
     force: yes
 
 - name: Change permissions 1
@@ -43,28 +47,49 @@
     recurse: yes
   become: true
 
-- name: Install Node.js 18
-  shell: |
-    sudo nvm install 18
-    sudo nvm alias default 18
-  args:
-    chdir: /home/reivertt
+# - name: Add NodeSource Repository
+#   shell: |
+#     curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+#     sudo apt-get update
+#   args:
+#     chdir: /home/reivertt
 
-- name: Install pm2
-  apt:
-    name: npm
-    state: latest
+# - name: Install Node.js
+#   apt:
+#     name: nodejs
+#     state: present
+#   become: true
+
+- name: Install NVM
+  become: yes  
+  shell: curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+
+- name: Source NVM for immediate availability 
+  become: yes
+  shell: . /root/.nvm/nvm.sh  
+
+- name: Install Node.js version 18
+  become: yes
+  shell: . /root/.nvm/nvm.sh && nvm install 18
+
+- name: Set Node.js version 18 as default
+  become: yes
+  shell: . /root/.nvm/nvm.sh && nvm use 18
 
 - name: Install pm2 globally
-  npm:
-    name: pm2
-    global: yes
+  shell: sudo npm install pm2 -g
+  become: true
 
-- name: Set up pm2
+- name: Install dependencies and build
   shell: |
-    cd /etc/www/fe-todo
-    yarn install --ignore-engines && yarn build
-    pm2 start --name fe-todo "yarn start"
+    yarn install --ignore-engines
+    yarn build
   args:
-    user: reivertt
+    chdir: /etc/www/fe-todo
+  become: yes
+
+- name: Start Pm2
+  shell: pm2 start --name fe-todo "yarn start"
+  args: 
+    chdir: /etc/www/fe-todo 
 
