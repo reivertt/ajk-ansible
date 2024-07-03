@@ -2,20 +2,30 @@ server {
         root /var/www/be-todo/public;
         index index.php index.html index.htm index.nginx-debian.html;
 
-        server_name 192.168.134.136;
+        server_name localhost;
         listen 8000;
 
         access_log /var/log/nginx/be_access.log;
         error_log /var/log/nginx/be_error.log;
 
-        # CORS Configuration
-        add_header 'Access-Control-Allow-Origin' '*' always;
-        add_header 'Access-Control-Allow-Methods' '*' always;
-        add_header 'Access-Control-Allow-Headers' '*' always;
-
         location / {
                 try_files $uri $uri/ /index.php?$query_string;
+                if ($request_method = 'OPTIONS') {
+                        add_header 'Access-Control-Allow-Origin' $http_origin always;
+                        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
+                        add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type' always;
+                        add_header 'Access-Control-Allow-Credentials' 'true' always;
+                        add_header 'Access-Control-Max-Age' 1728000 always;
+                        add_header 'Content-Type' 'text/plain charset=UTF-8';
+                        add_header 'Content-Length' 0;
+                        return 204;
+                }
+                add_header 'Access-Control-Allow-Origin' $http_origin always;
+                add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
+                add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type' always;
+                add_header 'Access-Control-Allow-Credentials' 'true' always;
         }
+        
 
         location ~ \.php$ {
                 include snippets/fastcgi-php.conf;

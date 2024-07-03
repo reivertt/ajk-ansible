@@ -29,11 +29,8 @@
     - php8.1-intl
   
 - name: Add safe directory to git
-  community.general.git_config:
-    name: safe.directory
-    value: 
-      - /var/www/be-todo
-    scope: global
+  become: true
+  command: git config --global --add safe.directory /var/www/be-todo
 
 - name: Clone repository BE
   git:
@@ -43,26 +40,26 @@
     force: yes
 
 - name: Change permissions 1
+  become: true
   file:
     path: /var/www/be-todo
-    mode: '0777'
+    mode: '0775'
     recurse: yes
-  become: true
 
 - name: Change permissions 2
+  become: true
   file:
-    path: /usr/local.bin
+    path: /usr/local/bin
     mode: '0777'
     recurse: yes
-  become: true
 
 - name: Change ownership
+  become: true
   file:
     path: /var/wwww/be-todo
     group: www-data
     owner: www-data
     recurse: yes
-  become: true
 
 - name: Download Composer setup script
   command: "php -r \"copy('https://getcomposer.org/installer', 'composer-setup.php');\""
@@ -80,21 +77,21 @@
     executable: /bin/bash
 
 - name: Install composer as root
+  become: true
   community.general.composer:
     command: install
     working_dir: /var/www/be-todo
     arguments: "--no-plugins --no-scripts"
-  become: true
   become_user: root
   environment: 
     COMPOSER_ALLOW_SUPERUSER: "1"
 
 - name: Update composer as root
+  become: true
   community.general.composer:
     command: update
     working_dir: /var/www/be-todo
     arguments: "--no-plugins --no-scripts"
-  become: true
   become_user: root
   environment: 
     COMPOSER_ALLOW_SUPERUSER: "1"

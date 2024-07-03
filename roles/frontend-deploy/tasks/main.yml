@@ -1,11 +1,14 @@
 ---
 # tasks file for frontend-deploy
+- name: Start Pm2
+  shell: source $HOME/.nvm/nvm.sh && cd /var/www/fe-todo &&  pm2 start --name fe-todo "yarn start"
+  args: 
+    executable: /bin/bash
+
 - name: Create nginx configuration
-  template:
-    src: fe-todo.j2
-    dest: /etc/nginx/sites-available/fe-todo
-    owner: root
-    group: root  
+  copy:
+    src: templates/fe-todo.j2
+    dest: /etc/nginx/sites-available/fe-todo 
 
 - name: Link nginx configuration
   file:
@@ -15,11 +18,13 @@
   become: true
   notify: Restart nginx
 
-- name: Check nginx configuration
-  shell: nginx -t
-  register: resultnginx
-  become: true
+- name: Check results
+  uri: 
+    url: "http://localhost:3000"
+    method: GET
+    return_content: yes
+  register: res
 
 - name: Show nginx result
   debug:
-    var: resultnginx.content
+    var: res.content
