@@ -43,7 +43,7 @@
   become: true
   file:
     path: /var/www/be-todo
-    mode: '0775'
+    mode: '0777'
     recurse: yes
 
 - name: Change permissions 2

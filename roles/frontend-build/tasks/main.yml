@@ -75,6 +75,12 @@
   shell: rm "/var/www/fe-todo/package-lock.json"
   ignore_errors: true
 
+- name: Replace endpoint url
+  ansible.builtin.replace:
+    path: "/var/www/fe-todo/src/app/config/config.ts"
+    regexp: 'baseURL: .*'
+    replace: 'baseURL: "http://192.168.134.136:8000/api"'
+
 - name: Install dependencies and build
   become: true
   shell: |

@@ -3,5 +3,5 @@
   become: true
   hosts: all
   roles: 
-    - ../roles/backend-deploy
-    # - ../roles/frontend-deploy
+    # - ../roles/backend-deploy
+    - ../roles/frontend-deploy
